@@ -8,6 +8,7 @@ class DataLoader:
     Dataloader Class
     Defines an iterable batch-sampler over a given dataset
     """
+
     def __init__(self, dataset, batch_size=1, shuffle=False, drop_last=False):
         """
         :param dataset: dataset from which to load the data
@@ -43,9 +44,14 @@ class DataLoader:
         #       - build_batch_iterator                                         #
         #     in section 1 of the notebook.                                    #
         ########################################################################
-        
 
-        pass
+        batch_it = self.build_batches()
+
+        batches = []
+        for batch in batch_it:
+            batches.append(batch)
+
+        return iter(batches)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -59,11 +65,32 @@ class DataLoader:
         # Hint: this is the number of batches you can sample from the dataset. #
         # Don't forget to check for drop last (self.drop_last)!                #
         ########################################################################
-        
 
-        pass
+        length = (
+            len(self.dataset) // self.batch_size
+            if self.drop_last
+            else int(np.ceil(len(self.dataset) / self.batch_size))
+        )
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
         return length
+
+    def build_batches(self):
+        if self.shuffle:
+            it = iter(np.random.permutation(len(self.dataset)))
+        else:
+            it = iter(range(len(self.dataset)))
+
+        batch = {"data": np.empty(0)}
+        for i in it:
+            batch["data"] = np.append(batch["data"], (self.dataset[i]["data"]))
+            # Make all full batches
+            if len(batch["data"]) == self.batch_size:
+                yield batch
+                batch = {"data": np.empty(0)}
+
+        # Final partial batch
+        if not self.drop_last:
+            yield batch
