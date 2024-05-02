@@ -9,6 +9,7 @@ import numpy as np
 
 class RescaleTransform:
     """Transform class to rescale images to a given range"""
+
     def __init__(self, out_range=(0, 1), in_range=(0, 255)):
         """
         :param out_range: Value range to which images should be rescaled to
@@ -21,7 +22,9 @@ class RescaleTransform:
         self._data_max = in_range[1]
 
     def __call__(self, image):
-        assert type(image) == np.ndarray, "The input image needs to be a numpy array! Make sure you dont send the string path."
+        assert (
+            type(image) == np.ndarray
+        ), "The input image needs to be a numpy array! Make sure you dont send the string path."
         ret_image = None
         ########################################################################
         # TODO:                                                                #
@@ -32,25 +35,37 @@ class RescaleTransform:
         #       Google the following algorithm:                                #
         #       "convert-a-number-range-to-another-range-maintaining-ratio"    #
         # Hint 2:                                                              #
-        #       Don't change the image in-place (directly in the memory),      # 
-        #       but return a copy with ret_image                               #                                      
+        #       Don't change the image in-place (directly in the memory),      #
+        #       but return a copy with ret_image                               #
         ########################################################################
-        
 
-        pass
+        ret_image = np.copy(image)
+        shape = np.shape(ret_image)
+
+        old_range = self._data_max - self._data_min
+        new_range = self.max - self.min
+
+        new_value = (
+            lambda old_value: (((old_value - self._data_min) * new_range) / old_range)
+            + self.min
+        )
+
+        ret_image = np.reshape(ret_image, -1)
+        ret_image = np.array(list(map(new_value, ret_image)))
+        ret_image = np.reshape(ret_image, shape)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
         return ret_image
-    
+
 
 def compute_image_mean_and_std(images):
     """
     Calculate the per-channel image mean and standard deviation of given images
     :param images: numpy array of shape NxHxWxC
         (for N images with C channels of spatial size HxW)
-    :returns: per-channels mean and std; numpy array of shape (C,). 
+    :returns: per-channels mean and std; numpy array of shape (C,).
     """
     mean, std = None, None
     ########################################################################
@@ -63,9 +78,9 @@ def compute_image_mean_and_std(images):
     # and not [1, C], [C, 1] or anything else. Use print(mean.shape) to    #
     # test yourself.                                                       #
     ########################################################################
-    
 
-    pass
+    mean = np.mean(images, axis=(0, 1, 2))
+    std = np.std(images, axis=(0, 1, 2))
 
     ########################################################################
     #                           END OF YOUR CODE                           #
@@ -81,6 +96,7 @@ class NormalizeTransform:
         - if mean and std are numpy arrays of size C for C image channels,
             then normalize each image channel separately
     """
+
     def __init__(self, mean, std):
         """
         :param mean: mean of images to be normalized
@@ -99,7 +115,7 @@ class NormalizeTransform:
         #   - divide by standard deviation                                     #
         ########################################################################
 
-        pass
+        images = images - self.mean / self.std
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -109,6 +125,7 @@ class NormalizeTransform:
 
 class ComposeTransform:
     """Transform class that combines multiple other transforms into one"""
+
     def __init__(self, transforms):
         """
         :param transforms: transforms to be combined
@@ -123,5 +140,6 @@ class ComposeTransform:
 
 class IdentityTransform:
     """Transform class that does nothing"""
+
     def __call__(self, images):
         return images
