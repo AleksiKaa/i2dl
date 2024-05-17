@@ -19,6 +19,9 @@ class Sigmoid:
         # Implement the forward pass of Sigmoid activation function            #
         ########################################################################
 
+        out = 1 / (1 + np.exp(-x))
+        cache = out
+
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
@@ -37,6 +40,9 @@ class Sigmoid:
         # TODO:                                                                #
         # Implement the backward pass of Sigmoid activation function           #
         ########################################################################
+
+        out = cache
+        dx = dout * (out * (1.0 - out))
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -62,6 +68,9 @@ class Relu:
         # Implement the forward pass of Relu activation function               #
         ########################################################################
 
+        out = np.maximum(x, 0)
+        cache = x
+
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
@@ -80,6 +89,9 @@ class Relu:
         # TODO:                                                                #
         # Implement the backward pass of Relu activation function              #
         ########################################################################
+
+        x = cache
+        dx = dout * (1.0 * (x > 0))
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -102,11 +114,15 @@ def affine_forward(x, w, b):
     :return cache: (x, w, b)
     """
     N, M = x.shape[0], b.shape[0]
-    out = np.zeros((N,M))
+    out = np.zeros((N, M))
     ########################################################################
     # TODO: Implement the affine forward pass. Store the result in out.    #
     # You will need to reshape the input into rows.                        #
     ########################################################################
+
+    D = np.prod(x.shape[1:])
+
+    out = np.matmul(np.reshape(x, (N, D)), w) + b
 
     ########################################################################
     #                           END OF YOUR CODE                           #
