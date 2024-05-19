@@ -1,4 +1,5 @@
 import numpy as np
+
 """
 This file implements various first-order update rules that are commonly used for
 training neural networks. Each update rule accepts current weights and the
@@ -79,12 +80,13 @@ class SGDMomentum(object):
     - velocity: A numpy array of the same shape as w and dw used to store a moving
       average of the gradients.
     """
+
     def __init__(self, model, loss_func, learning_rate=1e-4, **kwargs):
         self.model = model
         self.loss_func = loss_func
         self.lr = learning_rate
         self.grads = None
-        self.optim_config = kwargs.pop('optim_config', {})
+        self.optim_config = kwargs.pop("optim_config", {})
         self._reset()
 
     def _reset(self):
@@ -103,7 +105,7 @@ class SGDMomentum(object):
     def _update(self, w, dw, config, lr):
         """
         Update a model parameter
-        
+
         :param w: Current weight matrix
         :param dw: The corresponding calculated gradient, of the same shape as w.
         :param config: A dictionary, containing relevant parameters, such as the "momentum" value. Check it out.
@@ -114,20 +116,24 @@ class SGDMomentum(object):
         """
         if config is None:
             config = {}
-        config.setdefault('momentum', 0.9)
-        v = config.get('velocity', np.zeros_like(w))
+        config.setdefault("momentum", 0.9)
+        v = config.get("velocity", np.zeros_like(w))
         next_w = None
 
         ########################################################################
-        # TODO: Implement the momentum update formula. Store the updated       #  
+        # TODO: Implement the momentum update formula. Store the updated       #
         # value in the next_w variable. You should also use and update the     #
         # velocity v.                                                          #
         ########################################################################
 
+        b = config.get("momentum")
+        v = b * v - lr * dw
+        next_w = w + v
+
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
-        config['velocity'] = v
+        config["velocity"] = v
 
         return next_w, config
 
@@ -167,13 +173,14 @@ class Adam(object):
     - v: Moving average of squared gradient.
     - t: Iteration number.
     """
+
     def __init__(self, model, loss_func, learning_rate=1e-4, **kwargs):
         self.model = model
         self.loss_func = loss_func
         self.lr = learning_rate
         self.grads = None
 
-        self.optim_config = kwargs.pop('optim_config', {})
+        self.optim_config = kwargs.pop("optim_config", {})
 
         self._reset()
 
@@ -193,7 +200,7 @@ class Adam(object):
     def _update(self, w, dw, config, lr):
         """
         Update a model parameter
-        
+
         :param w: Current weight matrix
         :param dw: The corresponding calculated gradient, of the same shape as w.
         :param config: A dictionary, containing relevant parameters, such as the "beta1" value. Check it out.
@@ -204,34 +211,34 @@ class Adam(object):
         """
         if config is None:
             config = {}
-        config.setdefault('beta1', 0.9)
-        config.setdefault('beta2', 0.999)
-        config.setdefault('epsilon', 1e-4)
-        config.setdefault('m', np.zeros_like(w))
-        config.setdefault('v', np.zeros_like(w))
-        config.setdefault('t', 0)
+        config.setdefault("beta1", 0.9)
+        config.setdefault("beta2", 0.999)
+        config.setdefault("epsilon", 1e-4)
+        config.setdefault("m", np.zeros_like(w))
+        config.setdefault("v", np.zeros_like(w))
+        config.setdefault("t", 0)
         next_w = None
 
         #########################################################################
         # TODO: Look at the Adam implementation.                                #
         #########################################################################
-        m = config['m']
-        v = config['v']
-        t = config['t']
-        beta1 = config['beta1']
-        beta2 = config['beta2']
+        m = config["m"]
+        v = config["v"]
+        t = config["t"]
+        beta1 = config["beta1"]
+        beta2 = config["beta2"]
         learning_rate = lr
-        eps = config['epsilon']
+        eps = config["epsilon"]
 
         m = beta1 * m + (1 - beta1) * dw
         m_hat = m / (1 - np.power(beta1, t + 1))
-        v = beta2 * v + (1 - beta2) * (dw ** 2)
+        v = beta2 * v + (1 - beta2) * (dw**2)
         v_hat = v / (1 - np.power(beta2, t + 1))
         next_w = w - learning_rate * m_hat / (np.sqrt(v_hat) + eps)
 
-        config['t'] = t + 1
-        config['m'] = m
-        config['v'] = v
+        config["t"] = t + 1
+        config["m"] = m
+        config["v"] = v
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
