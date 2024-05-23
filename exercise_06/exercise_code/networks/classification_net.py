@@ -212,7 +212,7 @@ class MyOwnNetwork(ClassificationNet):
         activation=Sigmoid,
         num_layer=2,
         input_size=3 * 32 * 32,
-        hidden_size=100,
+        hidden_size=[100],
         std=1e-3,
         num_classes=10,
         reg=0,
@@ -223,11 +223,12 @@ class MyOwnNetwork(ClassificationNet):
         out the classification network above.
         """
 
-        super().__init__()
-
         ########################################################################
         # TODO:  Your initialization here                                      #
         ########################################################################
+
+        assert(len(hidden_size) == num_layer - 1 or len(hidden_size) == 1)
+
         self.activation = activation()
         self.reg_strength = reg
 
@@ -242,7 +243,10 @@ class MyOwnNetwork(ClassificationNet):
         self.num_layer = num_layer
         self.std = std
         self.input_size = input_size
-        self.hidden_size = hidden_size
+        self.hidden_size = (
+            hidden_size if len(hidden_size) > 1 else hidden_size * (num_layer - 1)
+        )
+
         self.num_classes = num_classes
         self.reset_weights()
 
@@ -342,3 +346,28 @@ class MyOwnNetwork(ClassificationNet):
         #                           END OF YOUR CODE                           #
         ########################################################################
         return grads
+
+    def reset_weights(self):
+        # Input layer
+        self.params = {
+            "W1": self.std * np.random.randn(self.input_size, self.hidden_size[0]),
+            "b1": np.zeros(self.hidden_size[0]),
+        }
+
+        # iterate over hidden layers, init weights and biases of correct shape
+        for i in range(self.num_layer - 2):
+            self.params["W" + str(i + 2)] = self.std * np.random.randn(
+                self.hidden_size[i], self.hidden_size[i + 1]
+            )
+            self.params["b" + str(i + 2)] = np.zeros(self.hidden_size[i + 1])
+
+        self.params["W" + str(self.num_layer)] = self.std * np.random.randn(
+            self.hidden_size[-1], self.num_classes
+        )
+        self.params["b" + str(self.num_layer)] = np.zeros(self.num_classes)
+
+        self.grads = {}
+        self.reg = {}
+        for i in range(self.num_layer):
+            self.grads["W" + str(i + 1)] = 0.0
+            self.grads["b" + str(i + 1)] = 0.0
