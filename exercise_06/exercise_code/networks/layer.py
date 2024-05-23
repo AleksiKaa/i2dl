@@ -200,3 +200,27 @@ class Tanh:
         #                           END OF YOUR CODE                           #
         ########################################################################
         return dx
+
+
+class Softmax:
+    def __init__(self) -> None:
+        pass
+
+    def forward(self, x):
+
+        out = np.exp(x - np.max(x)) / np.sum(np.exp(x - np.max(x)))
+
+        cache = out, x
+
+        return out, cache
+
+    def backward(self, dout, cache):
+        out, _ = cache
+
+        shape = out.shape
+
+        softmax = np.reshape(dout, (1, -1))
+        grad = np.reshape(out, (1, -1))
+
+        d_softmax = softmax * np.identity(softmax.size) - softmax.transpose() @ softmax
+        return np.reshape(grad @ d_softmax, shape)
