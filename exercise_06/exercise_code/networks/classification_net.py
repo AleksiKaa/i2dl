@@ -75,6 +75,7 @@ class ClassificationNet(Network):
         X = X.reshape(X.shape[0], -1)
         # Unpack variables from the params dictionary
         for i in range(self.num_layer - 1):
+
             W, b = self.params["W" + str(i + 1)], self.params["b" + str(i + 1)]
 
             # Forward i_th layer
@@ -209,8 +210,7 @@ class MyOwnNetwork(ClassificationNet):
 
     def __init__(
         self,
-        activation=Sigmoid,
-        num_layer=2,
+        activation=[Sigmoid],
         input_size=3 * 32 * 32,
         hidden_size=[100],
         std=1e-3,
@@ -227,9 +227,9 @@ class MyOwnNetwork(ClassificationNet):
         # TODO:  Your initialization here                                      #
         ########################################################################
 
-        assert(len(hidden_size) == num_layer - 1 or len(hidden_size) == 1)
+        assert len(activation) >= len(hidden_size), "check activations"
 
-        self.activation = activation()
+        self.activation = activation
         self.reg_strength = reg
 
         self.cache = None
@@ -240,12 +240,10 @@ class MyOwnNetwork(ClassificationNet):
         self.num_operation = 0
 
         # Initialize random gaussian weights for all layers and zero bias
-        self.num_layer = num_layer
+        self.num_layer = len(hidden_size) + 1
         self.std = std
         self.input_size = input_size
-        self.hidden_size = (
-            hidden_size if len(hidden_size) > 1 else hidden_size * (num_layer - 1)
-        )
+        self.hidden_size = hidden_size
 
         self.num_classes = num_classes
         self.reset_weights()
@@ -279,7 +277,7 @@ class MyOwnNetwork(ClassificationNet):
             self.cache["affine" + str(i + 1)] = cache_affine
 
             # Activation function
-            X, cache_sigmoid = self.activation.forward(X)
+            X, cache_sigmoid = self.activation[i]().forward(X)
             self.cache["sigmoid" + str(i + 1)] = cache_sigmoid
 
             # Store the reg for the current W
@@ -329,7 +327,7 @@ class MyOwnNetwork(ClassificationNet):
             cache_affine = self.cache["affine" + str(i + 1)]
 
             # Activation backward
-            dh = self.activation.backward(dh, cache_sigmoid)
+            dh = self.activation[i]().backward(dh, cache_sigmoid)
 
             # Affine backward
             dh, dW, db = affine_backward(dh, cache_affine)
@@ -340,7 +338,7 @@ class MyOwnNetwork(ClassificationNet):
             )
             self.grads["b" + str(i + 1)] = db
 
-        return self.grads
+        grads = self.grads
 
         ########################################################################
         #                           END OF YOUR CODE                           #
