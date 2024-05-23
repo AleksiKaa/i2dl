@@ -122,7 +122,8 @@ class LeakyRelu:
         # Implement the forward pass of LeakyRelu activation function          #
         ########################################################################
 
-        pass
+        outputs = 1 * (x < 0) * (self.slope * x) + 1 * (x >= 0) * x
+        cache = x
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -139,7 +140,8 @@ class LeakyRelu:
         # Implement the backward pass of LeakyRelu activation function         #
         ########################################################################
 
-        pass
+        x = cache
+        dx = dout * (1.0 * (x > 0)) + dout * (self.slope * (x < 0))
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -165,7 +167,11 @@ class Tanh:
         # Implement the forward pass of Tanh activation function               #
         ########################################################################
 
-        pass
+        sigmoid = Sigmoid()
+        out, _ = sigmoid.forward(2 * x)
+
+        outputs = 2 * out - 1
+        cache = x
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -182,7 +188,13 @@ class Tanh:
         # Implement the backward pass of Tanh activation function              #
         ########################################################################
 
-        pass
+        x = cache
+
+        sigmoid = Sigmoid()
+        out, _ = sigmoid.forward(2 * x)
+
+        grad = 4 * out * (1 - out)
+        dx = dout * grad
 
         ########################################################################
         #                           END OF YOUR CODE                           #
