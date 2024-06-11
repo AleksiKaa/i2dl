@@ -2,22 +2,23 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+
 class Encoder(nn.Module):
 
     def __init__(self, hparams, input_size=28 * 28, latent_dim=20):
         super().__init__()
 
         # set hyperparams
-        self.latent_dim = latent_dim 
+        self.latent_dim = latent_dim
         self.input_size = input_size
         self.hparams = hparams
         self.encoder = None
 
         ########################################################################
-        # TODO: Initialize your encoder!                                       #                                       
+        # TODO: Initialize your encoder!                                       #
         #                                                                      #
         # Possible layers: nn.Linear(), nn.BatchNorm1d(), nn.ReLU(),           #
-        # nn.Sigmoid(), nn.Tanh(), nn.LeakyReLU().                             # 
+        # nn.Sigmoid(), nn.Tanh(), nn.LeakyReLU().                             #
         # Look online for the APIs.                                            #
         #                                                                      #
         # Hint 1:                                                              #
@@ -25,12 +26,14 @@ class Encoder(nn.Module):
         # Example: nn.Sequential(nn.Linear(10, 20), nn.ReLU())                 #
         #                                                                      #
         # Hint 2:                                                              #
-        # The latent_dim should be the output size of your encoder.            # 
+        # The latent_dim should be the output size of your encoder.            #
         # We will have a closer look at this parameter later in the exercise.  #
         ########################################################################
 
-
-        pass
+        self.encoder = nn.Sequential(
+            nn.Linear(input_size, self.hparams["latent_dim"]),
+            nn.ReLU(),
+        )
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -39,6 +42,7 @@ class Encoder(nn.Module):
     def forward(self, x):
         # feed x into encoder!
         return self.encoder(x)
+
 
 class Decoder(nn.Module):
 
@@ -53,8 +57,9 @@ class Decoder(nn.Module):
         # TODO: Initialize your decoder!                                       #
         ########################################################################
 
-
-        pass
+        self.decoder = nn.Sequential(
+            nn.Linear(self.hparams["latent_dim"], output_size), nn.ReLU(), nn.Sigmoid()
+        )
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -74,7 +79,9 @@ class Autoencoder(nn.Module):
         # Define models
         self.encoder = encoder
         self.decoder = decoder
-        self.device = hparams.get("device", torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+        self.device = hparams.get(
+            "device", torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        )
         self.set_optimizer()
 
     def forward(self, x):
@@ -85,7 +92,8 @@ class Autoencoder(nn.Module):
         #  of the input.                                                       #
         ########################################################################
 
-        pass
+        reconstruction = self.encoder(x)
+        reconstruction = self.decoder(reconstruction)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -99,7 +107,7 @@ class Autoencoder(nn.Module):
         # TODO: Define your optimizer.                                         #
         ########################################################################
 
-        pass
+        self.optimizer = torch.optim.Adam(self.parameters())
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -107,7 +115,7 @@ class Autoencoder(nn.Module):
 
     def training_step(self, batch, loss_func):
         """
-        This function is called for every batch of data during training. 
+        This function is called for every batch of data during training.
         It should return the loss for the batch.
         """
         loss = None
@@ -127,11 +135,18 @@ class Autoencoder(nn.Module):
         # Don't forget to reshape the input, so it fits fully connected layers.#
         #                                                                      #
         # Hint 4:                                                              #
-        # Don't forget to move the data to the correct device!                 #                                     
+        # Don't forget to move the data to the correct device!                 #
         ########################################################################
 
+        for x in batch:
+            x = x.reshape(-1)
+            x = x.to(self.device)  # GPU
+            self.optimizer.zero_grad()
+            x_hat = self.forward(x)
 
-        pass
+            loss = loss_func(x, x_hat)
+            loss.backward()
+            self.optimizer.step()
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -154,8 +169,14 @@ class Autoencoder(nn.Module):
         # from the notebook.                                                   #
         ########################################################################
 
-
-        pass
+        loss = 0
+        self.eval()
+        with torch.no_grad():
+            for x in batch:
+                x = x.view(x.shape[0], -1)
+                x_hat = self.forward(x)
+                loss = loss_func(x, x_hat)
+                loss += loss.item()
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -176,7 +197,8 @@ class Autoencoder(nn.Module):
             flattened_X = X.view(X.shape[0], -1)
             reconstruction = self.forward(flattened_X)
             reconstructions.append(
-                reconstruction.view(-1, 28, 28).cpu().detach().numpy())
+                reconstruction.view(-1, 28, 28).cpu().detach().numpy()
+            )
 
         return np.concatenate(reconstructions, axis=0)
 
@@ -189,51 +211,52 @@ class Classifier(nn.Module):
         self.hparams = hparams
         self.encoder = encoder
         self.model = nn.Identity()
-        self.device = hparams.get("device", torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+        self.device = hparams.get(
+            "device", torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        )
 
-        
         ########################################################################
         # TODO:                                                                #
-        # Given an Encoder, finalize your classifier, by adding a classifier   #   
-        # block of fully connected layers.                                     #                                                             
+        # Given an Encoder, finalize your classifier, by adding a classifier   #
+        # block of fully connected layers.                                     #
         ########################################################################
 
-
-        pass
+        self.model = nn.Sequential(
+            nn.Linear(self.hparams["latent_dim"], self.hparams["num_classes"])
+        )
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
 
         self.set_optimizer()
-        
+
     def forward(self, x):
         x = self.encoder(x)
         x = self.model(x)
         return x
 
     def set_optimizer(self):
-        
+
         self.optimizer = None
         ########################################################################
         # TODO: Implement your optimizer. Send it to the classifier parameters #
         # and the relevant learning rate (from self.hparams)                   #
         ########################################################################
 
-
-        pass
+        self.optimizer = torch.optim.Adam(self.parameters())
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
 
     def getAcc(self, loader=None):
-        
+
         assert loader is not None, "Please provide a dataloader for accuracy evaluation"
 
         self.eval()
         self = self.to(self.device)
-            
+
         scores = []
         labels = []
 
