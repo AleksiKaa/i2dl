@@ -31,8 +31,9 @@ class Encoder(nn.Module):
         ########################################################################
 
         self.encoder = nn.Sequential(
-            nn.Linear(input_size, self.hparams["latent_dim"]),
+            nn.Linear(input_size, self.hparams["hidden_size"]),
             nn.ReLU(),
+            nn.Linear(self.hparams["hidden_size"], self.hparams["latent_dim"]),
         )
 
         ########################################################################
@@ -58,7 +59,10 @@ class Decoder(nn.Module):
         ########################################################################
 
         self.decoder = nn.Sequential(
-            nn.Linear(self.hparams["latent_dim"], output_size), nn.ReLU(), nn.Sigmoid()
+            nn.Linear(self.hparams["latent_dim"], self.hparams["hidden_size"]),
+            nn.ReLU(),
+            nn.Linear(self.hparams["hidden_size"], output_size),
+            nn.Sigmoid(),
         )
 
         ########################################################################
@@ -91,7 +95,6 @@ class Autoencoder(nn.Module):
         #  vector. Then decode the latent vector and get your reconstruction   #
         #  of the input.                                                       #
         ########################################################################
-
         reconstruction = self.encoder(x)
         reconstruction = self.decoder(reconstruction)
 
@@ -173,6 +176,7 @@ class Autoencoder(nn.Module):
         self.eval()
         with torch.no_grad():
             for x in batch:
+                x = x.to(self.device)
                 x = x.view(x.shape[0], -1)
                 x_hat = self.forward(x)
                 loss = loss_func(x, x_hat)
