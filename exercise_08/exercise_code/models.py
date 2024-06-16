@@ -147,7 +147,7 @@ class Autoencoder(nn.Module):
             self.optimizer.zero_grad()
             x_hat = self.forward(x)
 
-            loss = loss_func(x, x_hat)
+            loss = loss_func(x_hat, x)
             loss.backward()
             self.optimizer.step()
 
@@ -179,7 +179,7 @@ class Autoencoder(nn.Module):
                 x = x.to(self.device)
                 x = x.view(x.shape[0], -1)
                 x_hat = self.forward(x)
-                loss = loss_func(x, x_hat)
+                loss = loss_func(x_hat, x)
                 loss += loss.item()
 
         ########################################################################
