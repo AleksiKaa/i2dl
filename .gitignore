@@ -2,3 +2,4 @@ Output
 __pycache__
 .DS_Store
 datasets
+pretrainedModels
