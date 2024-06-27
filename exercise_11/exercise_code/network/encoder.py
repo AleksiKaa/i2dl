@@ -2,16 +2,19 @@ from torch import nn
 import torch
 from ..network import EncoderBlock
 
+
 class Encoder(nn.Module):
 
-    def __init__(self,
-                 d_model: int,
-                 d_k: int,
-                 d_v: int,
-                 n_heads: int,
-                 d_ff: int,
-                 n: int,
-                 dropout: float = 0.0):
+    def __init__(
+        self,
+        d_model: int,
+        d_k: int,
+        d_v: int,
+        n_heads: int,
+        d_ff: int,
+        n: int,
+        dropout: float = 0.0,
+    ):
         """
 
         Args:
@@ -25,17 +28,23 @@ class Encoder(nn.Module):
         """
         super().__init__()
 
-        self.stack = nn.ModuleList([EncoderBlock(d_model=d_model,
-                                                 d_k=d_k,
-                                                 d_v=d_v,
-                                                 n_heads=n_heads,
-                                                 d_ff=d_ff,
-                                                 dropout=dropout) for _ in range(n)])
+        self.stack = nn.ModuleList(
+            [
+                EncoderBlock(
+                    d_model=d_model,
+                    d_k=d_k,
+                    d_v=d_v,
+                    n_heads=n_heads,
+                    d_ff=d_ff,
+                    dropout=dropout,
+                )
+                for _ in range(n)
+            ]
+        )
 
-
-    def forward(self,
-                inputs: torch.Tensor,
-                encoder_mask: torch.Tensor = None) -> torch.Tensor:
+    def forward(
+        self, inputs: torch.Tensor, encoder_mask: torch.Tensor = None
+    ) -> torch.Tensor:
         """
 
         Args:

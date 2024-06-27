@@ -3,15 +3,18 @@ import torch
 from ..network import MultiHeadAttention
 from ..network import FeedForwardNeuralNetwork
 
+
 class EncoderBlock(nn.Module):
 
-    def __init__(self,
-                 d_model: int,
-                 d_k: int,
-                 d_v: int,
-                 n_heads: int,
-                 d_ff: int,
-                 dropout: float = 0.0):
+    def __init__(
+        self,
+        d_model: int,
+        d_k: int,
+        d_v: int,
+        n_heads: int,
+        d_ff: int,
+        dropout: float = 0.0,
+    ):
         """
 
         Args:
@@ -41,16 +44,18 @@ class EncoderBlock(nn.Module):
         # Hint 6: Check out the pytorch layer norm module                      #
         ########################################################################
 
-
-        pass
+        self.multi_head = MultiHeadAttention(d_model, d_k, d_v, n_heads, dropout)
+        self.layer_norm1 = nn.LayerNorm(d_model)
+        self.ffn = FeedForwardNeuralNetwork(d_model, d_ff, dropout)
+        self.layer_norm2 = nn.LayerNorm(d_model)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
 
-    def forward(self,
-                inputs: torch.Tensor,
-                pad_mask: torch.Tensor = None) -> torch.Tensor:
+    def forward(
+        self, inputs: torch.Tensor, pad_mask: torch.Tensor = None
+    ) -> torch.Tensor:
         """
 
         Args:
@@ -73,8 +78,10 @@ class EncoderBlock(nn.Module):
         #         the pad_mask for now!                                        #
         ########################################################################
 
-
-        pass
+        outputs = self.multi_head(inputs, inputs, inputs) + inputs
+        res = self.layer_norm1(outputs)
+        outputs = self.ffn(res) + res
+        outputs = self.layer_norm2(outputs)
 
         ########################################################################
         #                           END OF YOUR CODE                           #

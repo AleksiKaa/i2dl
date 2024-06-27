@@ -2,11 +2,10 @@ from torch import nn
 import torch
 from ..network import SCORE_SAVER
 
+
 class ScaledDotAttention(nn.Module):
 
-    def __init__(self,
-                 d_k,
-                 dropout: float = 0.0):
+    def __init__(self, d_k, dropout: float = 0.0):
         """
 
         Args:
@@ -22,21 +21,22 @@ class ScaledDotAttention(nn.Module):
         ########################################################################
         # TODO:                                                                #
         #   Task 2: Initialize the softmax layer (torch.nn implementation)     #
-        #                                                                      #           
+        #                                                                      #
         ########################################################################
 
-
-        pass
+        self.softmax = nn.Softmax(dim=1)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
 
-    def forward(self,
-                q: torch.Tensor,
-                k: torch.Tensor,
-                v: torch.Tensor,
-                mask: torch.Tensor = None) -> torch.Tensor:
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        mask: torch.Tensor = None,
+    ) -> torch.Tensor:
         """
         Computes the scaled dot attention given query, key and value inputs. Stores the scores in SCORE_SAVER for
         visualization
@@ -78,9 +78,16 @@ class ScaledDotAttention(nn.Module):
         # Hint 8:                                                              #
         #       - Have a look at Tensor.masked_fill_() or use torch.where()    #
         ########################################################################
+        n_dims = len(k.shape)
 
+        if n_dims > 2:
+            self.softmax = nn.Softmax(dim=n_dims - 1)
 
-        pass
+        denom = torch.sqrt(torch.tensor(self.d_k))
+
+        scores = q @ torch.transpose(k, n_dims - 2, n_dims - 1)
+        scores = self.softmax(scores / denom)
+        outputs = scores @ v
 
         ########################################################################
         #                           END OF YOUR CODE                           #

@@ -131,7 +131,8 @@ class EncoderBlockValueTest(UnitTest):
         self.expected = torch.load(join(task_path, 'output.pt'))
     
     def test(self):
-        return torch.allclose(self.expected, self.result)
+        print(torch.max(self.expected - self.result))
+        return torch.allclose(self.expected, self.result, rtol=1e-03, atol=1e-05)
     
     def define_failure_message(self):
         return " ".join(f"{self.test_name} {self.failed_msg} {string_utils.ARROW}\

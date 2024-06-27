@@ -1,16 +1,14 @@
 from torch import nn
-import torch    
+import torch
 
 from ..network import ScaledDotAttention
 
+
 class MultiHeadAttention(nn.Module):
 
-    def __init__(self,
-                 d_model: int,
-                 d_k: int,
-                 d_v: int,
-                 n_heads: int,
-                 dropout: float = 0.0):
+    def __init__(
+        self, d_model: int, d_k: int, d_v: int, n_heads: int, dropout: float = 0.0
+    ):
         """
 
         Args:
@@ -25,6 +23,7 @@ class MultiHeadAttention(nn.Module):
         self.n_heads = n_heads
         self.d_k = d_k
         self.d_v = d_v
+        self.d_m = d_model
 
         self.weights_q = None
         self.weights_k = None
@@ -50,18 +49,23 @@ class MultiHeadAttention(nn.Module):
         #       - All linear layers should only be a weight without a bias!    #
         ########################################################################
 
-
-        pass
+        self.weights_q = nn.Linear(d_model, n_heads * d_k, bias=False)
+        self.weights_k = nn.Linear(d_model, n_heads * d_k, bias=False)
+        self.weights_v = nn.Linear(d_model, n_heads * d_v, bias=False)
+        self.attention = ScaledDotAttention(d_k)
+        self.project = nn.Linear(d_v * n_heads, d_model, bias=False)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
 
-    def forward(self,
-                q: torch.Tensor,
-                k: torch.Tensor,
-                v: torch.Tensor,
-                mask: torch.Tensor = None) -> torch.Tensor:
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        mask: torch.Tensor = None,
+    ) -> torch.Tensor:
         """
 
         Args:
@@ -112,12 +116,29 @@ class MultiHeadAttention(nn.Module):
         #       - Use unsqueeze() to add dimensions at the correct location    #
         ########################################################################
 
+        # Pass through linear layer
+        q_ = self.weights_q(q)
+        k_ = self.weights_k(k)
+        v_ = self.weights_v(v)
 
-        pass
+        # Reshape weights
+        q_ = torch.reshape(q_, [*q_.shape[:-1], self.n_heads, self.d_k])
+        k_ = torch.reshape(k_, [*k_.shape[:-1], self.n_heads, self.d_k])
+        v_ = torch.reshape(v_, [*v_.shape[:-1], self.n_heads, self.d_v])
+
+        # Transpose
+        q_ = q_.transpose(1, 2)
+        k_ = k_.transpose(1, 2)
+        v_ = v_.transpose(1, 2)
+
+        # Pass through attention layer
+        outputs = self.attention(q_, k_, v_)
+        outputs = outputs.transpose(1, 2)
+        outputs = torch.reshape(outputs, [*outputs.shape[:-2], self.n_heads * self.d_v])
+        outputs = self.project(outputs)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
 
         return outputs
-    

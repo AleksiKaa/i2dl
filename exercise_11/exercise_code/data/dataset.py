@@ -15,7 +15,7 @@ def compute_length(file_paths):
     length = 0
     line_count = 0
     for file in file_paths:
-        with open(file, 'r') as f:
+        with open(file, "r") as f:
             for line_count, _ in enumerate(f):
                 pass
         length += line_count
@@ -54,7 +54,9 @@ class CustomIterableDataset(IterableDataset):
             dict: Contains 'source' and 'target' data from the file.
         """
         for file in self.file_paths:
-            reader = pd.read_csv(filepath_or_buffer=file, iterator=True, chunksize=self.chunk_size)
+            reader = pd.read_csv(
+                filepath_or_buffer=file, iterator=True, chunksize=self.chunk_size
+            )
 
             ########################################################################
             # TODO:                                                                #
@@ -72,9 +74,9 @@ class CustomIterableDataset(IterableDataset):
             #         like row['source'].                                          #
             #         Dont use return ;)                                           #
             ########################################################################
-
-
-            pass
+            for chunk in reader:
+                for row in chunk.iterrows():
+                    yield {"source": row[1]["source"], "target": row[1]["target"]}
 
             ########################################################################
             #                           END OF YOUR CODE                           #

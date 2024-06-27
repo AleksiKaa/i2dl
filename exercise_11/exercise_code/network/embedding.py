@@ -2,13 +2,12 @@ from torch import nn
 import torch
 from ..util.transformer_util import positional_encoding
 
+
 class Embedding(nn.Module):
 
-    def __init__(self,
-                 vocab_size: int,
-                 d_model: int,
-                 max_length: int,
-                 dropout: float = 0.0):
+    def __init__(
+        self, vocab_size: int, d_model: int, max_length: int, dropout: float = 0.0
+    ):
         """
 
         Args:
@@ -37,8 +36,8 @@ class Embedding(nn.Module):
         #       - Initialize it using d_model and max_length                   #
         ########################################################################
 
-
-        pass
+        self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=d_model)
+        self.pos_encoding = positional_encoding(d_model, max_length)
 
         ########################################################################
         #                           END OF YOUR CODE                           #
@@ -46,12 +45,13 @@ class Embedding(nn.Module):
 
         # We will convert it into a torch parameter module for you! You can treat it like a normal tensor though!
         if self.pos_encoding is not None:
-            self.pos_encoding = nn.Parameter(data=self.pos_encoding, requires_grad=False)
+            self.pos_encoding = nn.Parameter(
+                data=self.pos_encoding, requires_grad=False
+            )
 
-    def forward(self,
-                inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
-        The forward function takes in tensors of token ids and transforms them into vector embeddings. 
+        The forward function takes in tensors of token ids and transforms them into vector embeddings.
         It then adds the positional encoding to the embeddings, and if configured, performs dropout on the layer!
 
         Args:
@@ -80,8 +80,7 @@ class Embedding(nn.Module):
         #         is add them to the embeddings!                               #
         ########################################################################
 
-
-        pass
+        outputs = self.embedding(inputs) + pos_encoding
 
         ########################################################################
         #                           END OF YOUR CODE                           #

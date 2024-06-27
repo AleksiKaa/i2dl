@@ -40,7 +40,7 @@ class DecoderBlock(nn.Module):
         #                           - Causal Multi-Head Self-Attention layer   #
         #                           - Layer Normalization                      #
         #                           - Multi-Head Cross-Attention layer         #
-        #                           - Layer Normalization                      #
+        #                           - alization                      #
         #                           - Feed forward neural network layer        #
         #                           - Layer Normalization                      #
         #                                                                      #

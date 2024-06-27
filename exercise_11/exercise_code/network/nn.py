@@ -1,12 +1,10 @@
 from torch import nn
 import torch
 
+
 class FeedForwardNeuralNetwork(nn.Module):
 
-    def __init__(self,
-                 d_model: int,
-                 d_ff: int,
-                 dropout: float = 0.0):
+    def __init__(self, d_model: int, d_ff: int, dropout: float = 0.0):
         """
 
         Args:
@@ -28,15 +26,15 @@ class FeedForwardNeuralNetwork(nn.Module):
         #                                                                      #
         ########################################################################
 
-
-        pass
+        self.linear_1 = nn.Linear(d_model, d_ff)
+        self.linear_2 = nn.Linear(d_ff, d_model)
+        self.relu = nn.ReLU()
 
         ########################################################################
         #                           END OF YOUR CODE                           #
         ########################################################################
 
-    def forward(self,
-                inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
 
         Args:
@@ -55,8 +53,7 @@ class FeedForwardNeuralNetwork(nn.Module):
         #                                                                      #
         ########################################################################
 
-
-        pass
+        outputs = self.linear_2(self.relu(self.linear_1(inputs)))
 
         ########################################################################
         #                           END OF YOUR CODE                           #
